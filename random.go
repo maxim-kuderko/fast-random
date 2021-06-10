@@ -6,14 +6,6 @@ import (
 	"sync/atomic"
 )
 
-var (
-	source rand.Source
-)
-
-func init() {
-
-}
-
 type Source struct {
 	orig   []rand.Source
 	shards int32
