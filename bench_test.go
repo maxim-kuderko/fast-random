@@ -7,7 +7,6 @@ import (
 
 var x int64
 
-// BenchmarkModulo-10    	68138263	        17.57 ns/op	       0 B/op	       0 allocs/op
 // BenchmarkSource-10    	77507067	        15.56 ns/op	       0 B/op	       0 allocs/op
 func BenchmarkSource(b *testing.B) {
 	src := NewSource(64, func() int64 {
