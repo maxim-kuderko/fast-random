@@ -7,7 +7,7 @@ import (
 
 var x int64
 
-// BenchmarkModulo-10    	70365412	        17.30 ns/op	       0 B/op	       0 allocs/op
+// BenchmarkModulo-10    	68138263	        17.57 ns/op	       0 B/op	       0 allocs/op
 func BenchmarkModulo(b *testing.B) {
 	src := NewSource(64, func() int64 {
 		return time.Now().UnixNano()
@@ -23,7 +23,7 @@ func BenchmarkModulo(b *testing.B) {
 	x = n
 }
 
-// BenchmarkBitShift-10    	75204264	        15.99 ns/op	       0 B/op	       0 allocs/op
+// BenchmarkBitShift-10    	73486071	        15.76 ns/op	       0 B/op	       0 allocs/op
 func BenchmarkBitShift(b *testing.B) {
 	src := NewBitShiftSource(64, func() int64 {
 		return time.Now().UnixNano()
