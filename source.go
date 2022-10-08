@@ -8,25 +8,25 @@ import (
 
 type Source struct {
 	orig   []rand.Source
-	shards int32
+	shards uint32
 
-	atomic32 *int32
+	atomic32 *uint32
 	lock     []sync.Mutex
 }
 
-func NewSource(shards int, seedFn func() int64) *Source {
+func NewSource(shards uint32, seedFn func() int64) *Source {
 	sources := make([]rand.Source, 0, shards)
-	for i := 0; i < shards; i++ {
+	for i := uint32(0); i < shards; i++ {
 		sources = append(sources, rand.NewSource(seedFn()))
 	}
-	i := int32(0)
-	return &Source{orig: sources, atomic32: &i, shards: int32(shards), lock: make([]sync.Mutex, shards)}
+	i := uint32(0)
+	return &Source{orig: sources, atomic32: &i, shards: shards, lock: make([]sync.Mutex, shards)}
 }
 
 func (s *Source) Int63() int64 {
-	n := atomic.AddInt32(s.atomic32, 1)
+	n := atomic.AddUint32(s.atomic32, 1)
 	if n >= s.shards {
-		atomic.CompareAndSwapInt32(s.atomic32, n, 0)
+		atomic.CompareAndSwapUint32(s.atomic32, n, 0)
 	}
 	shard := n % s.shards
 	s.lock[shard].Lock()

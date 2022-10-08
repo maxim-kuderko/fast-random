@@ -13,7 +13,7 @@ import (
 var globalRand = New()
 
 func New() *rand.Rand {
-	return rand.New(NewSource(runtime.GOMAXPROCS(-1), func() int64 {
+	return rand.New(NewSource(uint32(runtime.GOMAXPROCS(-1)), func() int64 {
 		return time.Now().UnixNano()
 	}))
 }
