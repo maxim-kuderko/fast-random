@@ -1,34 +1,47 @@
 package fast_random
 
 import (
+	"math/bits"
 	"math/rand"
 	"sync"
 	"sync/atomic"
+
+	"github.com/probably-not/pow"
 )
 
 type Source struct {
 	orig   []rand.Source
-	shards int32
+	shards uint32
+	mask   uint32
 
-	atomic32 *int32
+	atomic32 *uint32
 	lock     []sync.Mutex
 }
 
-func NewSource(shards int, seedFn func() int64) *Source {
-	sources := make([]rand.Source, 0, shards)
-	for i := 0; i < shards; i++ {
+func NewSource(shards uint32, seedFn func() int64) *Source {
+	closestPow := uint32(pow.ClosestPowerOfTwoBitwise(int64(shards)))
+	factor := uint32(bits.TrailingZeros32(closestPow))
+
+	sources := make([]rand.Source, 0, closestPow)
+	for i := uint32(0); i < closestPow; i++ {
 		sources = append(sources, rand.NewSource(seedFn()))
 	}
-	i := int32(0)
-	return &Source{orig: sources, atomic32: &i, shards: int32(shards), lock: make([]sync.Mutex, shards)}
+
+	i := uint32(0)
+	return &Source{
+		orig:     sources,
+		atomic32: &i,
+		shards:   closestPow,
+		mask:     (uint32(1) << uint32(factor)) - 1,
+		lock:     make([]sync.Mutex, closestPow),
+	}
 }
 
 func (s *Source) Int63() int64 {
-	n := atomic.AddInt32(s.atomic32, 1)
-	if n >= s.shards {
-		atomic.CompareAndSwapInt32(s.atomic32, n, 0)
-	}
-	shard := n % s.shards
+	n := atomic.AddUint32(s.atomic32, 1)
+	head := n & s.mask
+	shard := (head + uint32(1)) & s.mask
+
 	s.lock[shard].Lock()
 	defer s.lock[shard].Unlock()
 	return s.orig[shard].Int63()
